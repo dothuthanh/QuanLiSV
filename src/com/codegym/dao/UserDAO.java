@@ -18,6 +18,7 @@ public class UserDAO implements IUserDAO {
     private static final String SELECT_ALL_USERS = "select * from users";
     private static final String DELETE_USERS_SQL = "delete from users where id = ?;";
     private static final String UPDATE_USERS_SQL = "update users set name = ?,email= ?, country =? where id = ?;";
+    private static final String SELECT_USER_BY_COUNTRY = "select id,name,email,country from users where country=?";
 
     public UserDAO() {
     }
@@ -164,6 +165,32 @@ public class UserDAO implements IUserDAO {
         }
 
 
+    }
+
+    @Override
+    public List<User> searchUserByCountry(String searchCountry) {
+        List<User> users = new ArrayList<>();
+        // thiết lập kết nối
+        try(Connection connection = getConnection();
+            //tạo 1 câu lệnh bằng cách sử dụng kết nối
+            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_COUNTRY)){
+            preparedStatement.setString(1,searchCountry);
+            System.out.println(preparedStatement);
+            // thực hiện truy vấn hoặc cập nhật truy vấn
+            ResultSet rs = preparedStatement.executeQuery();
+            // xử lý đối tượng resultSet
+            while (rs.next()){
+                int id = rs.getInt("id");
+                String name = rs.getString("name");
+                String email =rs.getString("email");
+                String country = rs.getString("country");
+                users.add(new User(id, name, email, country));
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     private void printSQLException(SQLException ex) {

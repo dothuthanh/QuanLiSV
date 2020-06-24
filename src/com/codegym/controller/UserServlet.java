@@ -2,6 +2,7 @@ package com.codegym.controller;
 
 import com.codegym.dao.UserDAO;
 import com.codegym.model.User;
+import com.mysql.cj.conf.DatabaseUrlContainer;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,6 +18,7 @@ import java.util.List;
 public class UserServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UserDAO userDAO;
+
 
     public void init() {
         userDAO = new UserDAO();
@@ -35,6 +37,9 @@ public class UserServlet extends HttpServlet {
                 case "edit":
                     updateUser(request, response);
                     break;
+                case "search":
+                    searchUser(request,response);
+                    break;
             }
         } catch (SQLException ex) {
             throw new ServletException(ex);
@@ -48,6 +53,8 @@ public class UserServlet extends HttpServlet {
 
         try {
             switch (action) {
+                case "search":
+                    showSearchForm(request,response);
                 case "create":
                     showNewForm(request, response);
                     break;
@@ -64,6 +71,25 @@ public class UserServlet extends HttpServlet {
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
+    }
+
+    private void showSearchForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String country = request.getParameter("country");
+
+        List<User> user = this.userDAO.searchUserByCountry(country);
+        userDAO.searchUserByCountry(country);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("user/search.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void searchUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String country = request.getParameter("country");
+        List<User> user = this.userDAO.searchUserByCountry(country);
+            request.setAttribute("users", user);
+            request.setAttribute("thuoctinh",1);
+        RequestDispatcher dispatcher;
+            dispatcher = request.getRequestDispatcher("user/search.jsp");
+            dispatcher.forward(request, response);
     }
     private void listUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
@@ -82,7 +108,9 @@ public class UserServlet extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        User existingUser = userDAO.selectUser(id);
+        //User existingUser = userDAO.selectUser(id);
+        User existingUser = userDAO.getUserById(id);
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/edit.jsp");
         request.setAttribute("user", existingUser);
         dispatcher.forward(request, response);
@@ -94,7 +122,9 @@ public class UserServlet extends HttpServlet {
         String email = request.getParameter("email");
         String country = request.getParameter("country");
         User newUser = new User(name, email, country);
-        userDAO.insertUser(newUser);
+       // userDAO.insertUser(newUser);
+        userDAO.insertUserStore(newUser);
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
         dispatcher.forward(request, response);
         }
