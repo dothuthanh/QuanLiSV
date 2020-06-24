@@ -21,4 +21,6 @@ public interface IUserDAO {
     public void insertUserStore(User user) throws SQLException;
 
     List<User> searchUserByCountry(String country);
+    public void addUserTransaction(User user, int[] permision);
+
 }
